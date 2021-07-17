@@ -48,6 +48,40 @@ function _version() {
 # Internal function for debugging
 function _debug() {
     if [ $DEBUG_MODE = "Y" ]; then
-        echo "debug> "$@
+        echo "debug> $*"
     fi
 }
+
+
+# Increment SemVer (Major.Minor.Patch)
+# $1 - semver string as major.minor.patch.additional
+# $2 - level to incr {patch,minor,major}
+function semver() {
+    IFS='.' read -ra ver <<< "$1"
+    [[ "${#ver[@]}" -ne 3 ]] && echo "Invalid semver string" && exit 1
+
+    local major=${ver[0]}
+    local minor=${ver[1]}
+    local patch=${ver[2]}
+    local level=$2
+
+    case $level in
+        patch)
+            patch=$((patch+1))
+        ;;
+        minor)
+            patch=0
+            minor=$((minor+1))
+        ;;
+        major)
+            patch=0
+            minor=0
+            major=$((major+1))
+        ;;
+    esac
+
+    echo $major.$minor.$patch
+}
+
+next=$(semver $1 $2)
+echo $next
