@@ -14,6 +14,8 @@ readonly SEMVERSH_APPNAME
 readonly SEMVERSH_VERSION
 readonly SEMVERSH_BASENAME
 
+DEBUG_MODE="N"
+
 # Exit on error. Append "|| true" if you expect an error.
 set -o errexit
 # Exit on error inside any functions or subshells.
@@ -41,4 +43,11 @@ function _version() {
     echo -e "Licensed under the GNU General Public License v3.0"
     echo -e "http://github.com/martcus"
     echo -e ""
+}
+
+# Internal function for debugging
+function _debug() {
+    if [ $DEBUG_MODE = "Y" ]; then
+        echo "debug> "$@
+    fi
 }
