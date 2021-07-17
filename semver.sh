@@ -83,5 +83,5 @@ function semver() {
     echo $major.$minor.$patch
 }
 
-next=$(semver $1 $2)
-echo $next
+next=$(semver "$1" "$2")
+echo "$next"
