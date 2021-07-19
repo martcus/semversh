@@ -27,13 +27,6 @@ set -o pipefail
 # Turn on traces, useful while debugging but commented out by default
 # set -o xtrace
 
-# internal function - print help page
-function _usage() {
-    _version
-    echo -e "Usage: $SEMVERSH_BASENAME [OPTIONS]"
-    echo -e ""
-}
-
 # internal function - print version
 function _version() {
     echo -e ""
@@ -45,6 +38,14 @@ function _version() {
     echo -e ""
 }
 
+# internal function - print help page
+function _usage() {
+    _version
+    echo -e "Usage: $SEMVERSH_BASENAME [OPTIONS] major.minor.patch"
+    echo -e "   -h: Print this help"
+    echo -e ""
+}
+
 # Internal function for debugging
 function _debug() {
     if [ $DEBUG_MODE = "Y" ]; then
@@ -52,36 +53,14 @@ function _debug() {
     fi
 }
 
-
-# Increment SemVer (Major.Minor.Patch)
-# $1 - semver string as major.minor.patch.additional
-# $2 - level to incr {patch,minor,major}
-function semver() {
-    IFS='.' read -ra ver <<< "$1"
-    [[ "${#ver[@]}" -ne 3 ]] && echo "Invalid semver string" && exit 1
-
-    local major=${ver[0]}
-    local minor=${ver[1]}
-    local patch=${ver[2]}
-    local level=$2
-
-    case $level in
-        patch)
-            patch=$((patch+1))
-        ;;
-        minor)
-            patch=0
-            minor=$((minor+1))
-        ;;
-        major)
-            patch=0
-            minor=0
-            major=$((major+1))
-        ;;
+# Get the options
+while getopts ":h" option ; do
+    case $option in
+        h)  #Display the usage
+            _usage
+            exit;;
+        \?) #Invalid option
+            echo "Error: Invalid option"
+            exit;;
     esac
-
-    echo $major.$minor.$patch
-}
-
-next=$(semver "$1" "$2")
-echo "$next"
+done
