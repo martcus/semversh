@@ -6,16 +6,6 @@
 # http://github.com/martcus
 #--------------------------------------------------------------------------------------------------
 
-SEMVERSH_APPNAME="semversh"
-SEMVERSH_VERSION="0.0.1"
-SEMVERSH_BASENAME=$(basename "$0")
-
-readonly SEMVERSH_APPNAME
-readonly SEMVERSH_VERSION
-readonly SEMVERSH_BASENAME
-
-DEBUG_MODE="N"
-
 # Exit on error. Append "|| true" if you expect an error.
 set -o errexit
 # Exit on error inside any functions or subshells.
@@ -24,8 +14,20 @@ set -o errtrace
 set -o nounset
 # Catch the error in case mysqldump fails (but gzip succeeds) in `mysqldump |gzip`
 set -o pipefail
-# Turn on traces, useful while debugging but commented out by default
-# set -o xtrace
+# Enable xtrace if the DEBUG environment variable is set. Useful while debugging
+if [[ ${DEBUG-} =~ ^1|yes|true$ ]]; then
+    set -o xtrace       # Trace the execution of the script (debug)
+fi
+
+SEMVERSH_APPNAME="semversh"
+SEMVERSH_VERSION="0.0.1"
+SEMVERSH_BASENAME=$(basename "$0")
+SEMVERSH_REGEX="^([0-9]+)\.([0-9]+)\.([0-9]+)$"
+
+readonly SEMVERSH_APPNAME
+readonly SEMVERSH_VERSION
+readonly SEMVERSH_BASENAME
+readonly SEMVERSH_REGEX
 
 # internal function - print version
 function _version() {
@@ -46,21 +48,12 @@ function _usage() {
     echo -e ""
 }
 
-# Internal function for debugging
-function _debug() {
-    if [ $DEBUG_MODE = "Y" ]; then
-        echo "debug> $*"
-    fi
+# Internal function for fatal error, print message in stderr and exit with 1 as exitcode
+function _fatal {
+  echo -e "$@" >&2
+  exit 1
 }
 
-# Get the options
-while getopts ":h" option ; do
-    case $option in
-        h)  #Display the usage
-            _usage
-            exit;;
-        \?) #Invalid option
-            echo "Error: Invalid option"
-            exit;;
-    esac
-done
+if [[ ! $1 =~ $SEMVERSH_REGEX ]]; then
+    _fatal "semver doesn't match with pattern <major.minor.patch>"
+fi
