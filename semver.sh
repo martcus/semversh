@@ -6,17 +6,22 @@
 # http://github.com/martcus
 #--------------------------------------------------------------------------------------------------
 
-# Exit on error. Append "|| true" if you expect an error.
-set -o errexit
-# Exit on error inside any functions or subshells.
-set -o errtrace
-# Do not allow use of undefined vars. Use ${VAR:-} to use an undefined VAR
-set -o nounset
-# Catch the error in case mysqldump fails (but gzip succeeds) in `mysqldump |gzip`
-set -o pipefail
-# Enable xtrace if the DEBUG environment variable is set. Useful while debugging
 if [[ ${DEBUG-} =~ ^1|yes|true$ ]]; then
     set -o xtrace       # Trace the execution of the script (debug)
+fi
+
+# Only enable these shell behaviours if we're not being sourced
+# Approach via: https://stackoverflow.com/a/28776166/8787985
+if ! (return 0 2> /dev/null); then
+    # Exit on error. Append "|| true" if you expect an error.
+    set -o errexit
+    # Exit on error inside any functions or subshells.
+    set -o errtrace
+    # Do not allow use of undefined vars. Use ${VAR:-} to use an undefined VAR
+    set -o nounset
+    # Catch the error in case mysqldump fails (but gzip succeeds) in `mysqldump |gzip`
+    set -o pipefail
+    # Enable xtrace if the DEBUG environment variable is set. Useful while debugging
 fi
 
 SEMVERSH_APPNAME="semversh"
