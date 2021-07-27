@@ -6,14 +6,6 @@
 # http://github.com/martcus
 #--------------------------------------------------------------------------------------------------
 
-SEMVERSH_APPNAME="semversh"
-SEMVERSH_VERSION="0.0.1"
-SEMVERSH_BASENAME=$(basename "$0")
-
-readonly SEMVERSH_APPNAME
-readonly SEMVERSH_VERSION
-readonly SEMVERSH_BASENAME
-
 # Exit on error. Append "|| true" if you expect an error.
 set -o errexit
 # Exit on error inside any functions or subshells.
@@ -22,15 +14,20 @@ set -o errtrace
 set -o nounset
 # Catch the error in case mysqldump fails (but gzip succeeds) in `mysqldump |gzip`
 set -o pipefail
-# Turn on traces, useful while debugging but commented out by default
-# set -o xtrace
+# Enable xtrace if the DEBUG environment variable is set. Useful while debugging
+if [[ ${DEBUG-} =~ ^1|yes|true$ ]]; then
+    set -o xtrace       # Trace the execution of the script (debug)
+fi
 
-# internal function - print help page
-function _usage() {
-    _version
-    echo -e "Usage: $SEMVERSH_BASENAME [OPTIONS]"
-    echo -e ""
-}
+SEMVERSH_APPNAME="semversh"
+SEMVERSH_VERSION="0.0.1"
+SEMVERSH_BASENAME=$(basename "$0")
+SEMVERSH_REGEX="^([0-9]+)\.([0-9]+)\.([0-9]+)$"
+
+readonly SEMVERSH_APPNAME
+readonly SEMVERSH_VERSION
+readonly SEMVERSH_BASENAME
+readonly SEMVERSH_REGEX
 
 # internal function - print version
 function _version() {
@@ -42,3 +39,21 @@ function _version() {
     echo -e "http://github.com/martcus"
     echo -e ""
 }
+
+# internal function - print help page
+function _usage() {
+    _version
+    echo -e "Usage: $SEMVERSH_BASENAME [OPTIONS] major.minor.patch"
+    echo -e "   -h: Print this help"
+    echo -e ""
+}
+
+# Internal function for fatal error, print message in stderr and exit with 1 as exitcode
+function _fatal {
+  echo -e "$@" >&2
+  exit 1
+}
+
+if [[ ! $1 =~ $SEMVERSH_REGEX ]]; then
+    _fatal "semver doesn't match with pattern <major.minor.patch>"
+fi
